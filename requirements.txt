@@ -4,3 +4,4 @@ requests
 dotenv
 python_multipart
 jinja2
+slowapi

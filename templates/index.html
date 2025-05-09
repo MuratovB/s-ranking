@@ -56,9 +56,20 @@
     {% else %}
         <div class="form-container">
             <h1>S - Ranking</h1>
+                <div class="instructions">
+                    <h2>How to use:</h2>
+                    <ol>
+                        <li>Paste the full playlist link or the YouTube playlist ID</li>
+                        <li>Enter a session name (between 4 and 64 characters)</li>
+                        <li>Click "Start Session"</li>
+                        <li>Choose the better video/song from the two presented by clicking the corresponding buttons</li>
+                        <li>At the end, you will receive a sorted list of all the videos</li>
+                    </ol>
+                    <p class="tip">Tip: You can find the playlist ID in the URL after "list=" <br>Example: https://www.youtube.com/playlist?list=<strong>PLxxxxxxxxxxxxxxx</strong><br>But full playlist url is better though</p>
+                </div>
             <form id="sessionForm">
                 <div class="form-group">
-                    <label for="playlistId">Playlist ID:</label>
+                    <label for="playlistId">Playlist:</label>
                     <input type="text" id="playlistId" name="playlistId">
                 </div>
                 <div class="form-group">
