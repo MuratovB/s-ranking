@@ -5,8 +5,21 @@ const chooseSecondBtn = document.getElementById('chooseSecond');
 if (startSessionBtn) {
     startSessionBtn.addEventListener('click', function() {
         startSessionBtn.disabled = true;
-        const playlistId = document.getElementById('playlistId').value;
         const sessionName = document.getElementById('sessionName').value;
+        const playlistIdInput = document.getElementById('playlistId').value;
+        const playlistId = extractId(playlistIdInput);
+
+        if (!playlistId) {
+            alert("No playlist id found");
+            startSessionBtn.disabled = false;
+            return;
+        }
+
+        if (sessionName.length < 4 || sessionName.length > 64) {
+            alert("Session name is not correct length");
+            startSessionBtn.disabled = false;
+            return;
+        }
 
         fetch('/start_session', {
             method: 'POST',
@@ -159,4 +172,18 @@ function sendRankingChoice(winner) {
     .catch(error => {
         console.error('Error:', error);
     });
+}
+
+function extractId(playlistIdInput) {
+    const regex = /[&?]list=([^&]+)/i;
+    const match = playlistIdInput.match(regex);
+
+    if (match) {
+        const playlistId = match[1];
+        return playlistId;
+    } else if (!playlistIdInput.includes('&') && !playlistIdInput.includes('=') && !playlistIdInput.length === 34) {
+        return playlistIdInput;
+    } else {
+        return null;
+    }
 }
