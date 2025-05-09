@@ -41,7 +41,7 @@ async def start_session(data: SessionRequest):
         chat_history = [
             {
                 "role": "user",
-                "conent": initial_message
+                "content": initial_message
             },
             {
                 "role": "assistant",
@@ -80,11 +80,11 @@ async def session_make_step(data: SessionStepRequest):
     session["progress"] += 1
 
     if winner:
-        session["result_arr"].append(first_video)
-        second_arr.append(second_video)
+        session["result_arr"].append(session["first_video"])
+        second_arr.append(session["second_video"])
     else:
-        session["result_arr"].append(second_video)
-        first_arr.append(first_video)
+        session["result_arr"].append(session["second_video"])
+        first_arr.append(session["first_video"])
 
     while len(first_arr) >= 1 and len(second_arr) == 0:
         session["result_arr"].append(first_arr.pop())
@@ -96,20 +96,20 @@ async def session_make_step(data: SessionStepRequest):
         if len(session["videos"]) > 1:
             first_arr = session["videos"].pop()
             second_arr = session["videos"].pop()
-            first_video = first_arr.pop()
-            second_video = second_arr.pop()
+            session["first_video"] = first_arr.pop()
+            session["second_video"] = second_arr.pop()
             return {
-                "first_video": first_video,
-                "second_video": second_video
+                "first_video": session["first_video"],
+                "second_video": session["second_video"]
             }
         elif len(session["videos"]) == 1:
             first_arr = session["videos"].pop()
             second_arr = session["results"].pop()
-            first_video = first_arr.pop()
-            second_video = second_arr.pop()
+            session["first_video"] = first_arr.pop()
+            session["second_video"] = second_arr.pop()
             return {
-                "first_video": first_video,
-                "second_video": second_video
+                "first_video": session["first_video"],
+                "second_video": session["second_video"]
             }
         else:
             session["video"] = session["results"]
@@ -123,18 +123,18 @@ async def session_make_step(data: SessionStepRequest):
             else:
                 first_arr = session["videos"].pop()
                 second_arr = session["results"].pop()
-                first_video = first_arr.pop()
-                second_video = second_arr.pop()
+                session["first_video"] = first_arr.pop()
+                session["second_video"] = second_arr.pop()
                 return {
-                    "first_video": first_video,
-                    "second_video": second_video
+                    "first_video": session["first_video"],
+                    "second_video": session["second_video"]
                 }
     else:
-        first_video = first_arr.pop()
-        second_video = second_arr.pop()
+        session["first_video"] = first_arr.pop()
+        session["second_video"] = second_arr.pop()
         return {
-            "first_video": first_video,
-            "second_video": second_video
+            "first_video": session["first_video"],
+            "second_video": session["second_video"]
         }
 
 @app.post("/send_message")
