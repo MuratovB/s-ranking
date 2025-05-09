@@ -181,7 +181,7 @@ function extractId(playlistIdInput) {
     if (match) {
         const playlistId = match[1];
         return playlistId;
-    } else if (!playlistIdInput.includes('&') && !playlistIdInput.includes('=') && !playlistIdInput.length === 34) {
+    } else if (!playlistIdInput.includes('&') && !playlistIdInput.includes('=') && playlistIdInput.length === 34) {
         return playlistIdInput;
     } else {
         return null;
