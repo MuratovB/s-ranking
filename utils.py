@@ -72,7 +72,6 @@ async def send_message_to_model(message):
         response.raise_for_status()
         data = response.json()
         result_text = data['candidates'][0]['content']['parts'][0]['text']
-        print(result_text)
         return result_text
     except requests.RequestException as e:
         print("Error:", e)
