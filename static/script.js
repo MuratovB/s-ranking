@@ -22,6 +22,9 @@ function addMessage(content, isUser = false) {
 
 sendMessage.addEventListener('click', async () => {
     const message = chatInput.value.trim();
+    if (message.length > 250) {
+        message = message.slice(0, 250);
+    }
     if (!message) return;
 
     const sessionName = localStorage.getItem('session_name');
