@@ -71,7 +71,7 @@ async def start_session(request: Request, data: SessionRequest):
         first_video = first_arr.pop(0)
         second_video = second_arr.pop(0)
         initial_message = "Say hi to the user. You are a model that discusses with user about songs and only songs. Anything that is not related to music mustn't be discussed. For now, user haven't send any messages to you, but every user's message will be in the next format: 'prompt: user message'."
-        model_response = await send_message_to_model(initial_message)
+        comment='''model_response = await send_message_to_model(initial_message)
         chat_history = [
             {
                 "role": "user",
@@ -81,7 +81,7 @@ async def start_session(request: Request, data: SessionRequest):
                 "role": "assistant",
                 "content": model_response
             }
-        ]
+        ]'''
         sessions[session_name] = {
             "videos": videos,
             "results": results,
@@ -91,7 +91,7 @@ async def start_session(request: Request, data: SessionRequest):
             "second_video": second_video,
             "first_arr": first_arr,
             "second_arr": second_arr,
-            "chat_history": chat_history,
+            "chat_history": [],#chat_history,
             "progress": 0,
             "estimated_time": estimated_time,
             "finished": False,
