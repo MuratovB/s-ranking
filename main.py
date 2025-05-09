@@ -1,5 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from utils import *
 from schemas import *
 from math import log2, floor
@@ -14,11 +17,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="./templates")
+
 sessions = {}
 
-@app.get("/")
-async def root():
-    return {"message": "Backend is ready!"}
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "first_video": None, "second_video": None, "final_result": None})
+
+
+
+@app.get("/get_videos")
+async def get_videos(session_name: str):
+    if session_name not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session = sessions[session_name]
+    if session["finished"]:
+        return {"message": "Session is finished!", "final_result": session["final_result"]}
+    return {
+        "first_video": session["first_video"],
+        "second_video": session["second_video"]
+    }
+
+
 
 @app.post("/start_session")
 async def start_session(data: SessionRequest):
@@ -32,10 +56,10 @@ async def start_session(data: SessionRequest):
         results = []
         final_result = []
         result_arr = []
-        first_arr = videos.pop()
-        second_arr = videos.pop()
-        first_video = first_arr.pop()
-        second_video = second_arr.pop()
+        first_arr = videos.pop(0)
+        second_arr = videos.pop(0)
+        first_video = first_arr.pop(0)
+        second_video = second_arr.pop(0)
         initial_message = "Say hi to the user. You are a model that discusses with user about songs and only songs. Anything that is not related to music mustn't be discussed. For now, user haven't send any messages to you, but every user's message will be in the next format: 'prompt: user message'."
         model_response = await send_message_to_model(initial_message)
         chat_history = [
@@ -65,11 +89,14 @@ async def start_session(data: SessionRequest):
         return {
             "message": f"Session: {session_name} is ready!",
             "first_video": first_video,
-            "second_video": second_video
+            "second_video": second_video,
+            "session_name": session_name,
         }
 
-@app.post("/ranking")
-async def session_make_step(data: SessionStepRequest):
+
+
+@app.post("/process_choice")
+async def session_make_step(data: RankingRequest):
     session_name = data.session_name
     winner = data.winner
     
@@ -77,7 +104,6 @@ async def session_make_step(data: SessionStepRequest):
         raise HTTPException(status_code=404, detail="Session not found")
     
     session = sessions[session_name]
-    print(session)
 
     if session["finished"]:
         return {"message": "Session is finished!"}
@@ -86,30 +112,30 @@ async def session_make_step(data: SessionStepRequest):
 
     if winner:
         session["result_arr"].append(session["first_video"])
-        session["second_arr"].append(session["second_video"])
+        session["second_arr"].insert(0, session["second_video"])
     else:
         session["result_arr"].append(session["second_video"])
-        session["first_arr"].append(session["first_video"])
+        session["first_arr"].insert(0, session["first_video"])
 
     while len(session["first_arr"]) >= 1 and len(session["second_arr"]) == 0:
-        session["result_arr"].append(session["first_arr"].pop())
+        session["result_arr"].append(session["first_arr"].pop(0))
     while len(session["second_arr"]) >= 1 and len(session["first_arr"]) == 0:
-        session["result_arr"].append(session["second_arr"].pop())
+        session["result_arr"].append(session["second_arr"].pop(0))
 
     if len(session["first_arr"]) == 0 and len(session["second_arr"]) == 0:
         session["results"].append(session["result_arr"])
-        session["result_arr"] = []  # Reset for next round
+        session["result_arr"] = []
         
         if len(session["videos"]) > 1:
-            session["first_arr"] = session["videos"].pop()
-            session["second_arr"] = session["videos"].pop()
-            session["first_video"] = session["first_arr"].pop()
-            session["second_video"] = session["second_arr"].pop()
+            session["first_arr"] = session["videos"].pop(0)
+            session["second_arr"] = session["videos"].pop(0)
+            session["first_video"] = session["first_arr"].pop(0)
+            session["second_video"] = session["second_arr"].pop(0)
         elif len(session["videos"]) == 1:
-            session["first_arr"] = session["videos"].pop()
-            session["second_arr"] = session["results"].pop()
-            session["first_video"] = session["first_arr"].pop()
-            session["second_video"] = session["second_arr"].pop()
+            session["first_arr"] = session["videos"].pop(0)
+            session["second_arr"] = session["results"].pop(0)
+            session["first_video"] = session["first_arr"].pop(0)
+            session["second_video"] = session["second_arr"].pop(0)
         else:
             session["videos"] = session["results"]
             session["results"] = []
@@ -117,23 +143,53 @@ async def session_make_step(data: SessionStepRequest):
             if len(session["videos"]) == 1:
                 session["final_result"] = session["videos"][0]
                 session["finished"] = True
-                return {
-                    "message": "Session is finished!",
-                    "final_result": session["final_result"]
-                }
             else:
-                session["first_arr"] = session["videos"].pop()
-                session["second_arr"] = session["videos"].pop()
-                session["first_video"] = session["first_arr"].pop()
-                session["second_video"] = session["second_arr"].pop()
+                session["first_arr"] = session["videos"].pop(0)
+                session["second_arr"] = session["videos"].pop(0)
+                session["first_video"] = session["first_arr"].pop(0)
+                session["second_video"] = session["second_arr"].pop(0)
     else:
-        session["first_video"] = session["first_arr"].pop()
-        session["second_video"] = session["second_arr"].pop()
+        session["first_video"] = session["first_arr"].pop(0)
+        session["second_video"] = session["second_arr"].pop(0)
 
-        return {
-            "first_video": session["first_video"],
-            "second_video": session["second_video"]
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.post("/send_message")
 async def send_message(data: MessageRequest):

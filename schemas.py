@@ -4,7 +4,7 @@ class SessionRequest(BaseModel):
     playlist_id: str
     session_name: str
 
-class SessionStepRequest(BaseModel):
+class RankingRequest(BaseModel):
     session_name: str
     winner: int
 

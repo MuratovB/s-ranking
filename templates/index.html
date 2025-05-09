@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-Ranking</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% if final_result %}
+        <h1>Final Results</h1>
+        <ul class="results-list">
+            {% for video in final_result %}
+                <li class="result-item">
+                    <span class="result-number">{{ loop.index }}</span>
+                    <img class="result-thumbnail" src="{{ video.thumbnail_url }}" alt="{{ video.title }}">
+                    <a class="video-title" href="https://www.youtube.com/watch?v={{ video.videoId }}" target="_blank">
+                        {{ video.title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% elif first_video and second_video %}
+        <div class="video-container">
+            <div class="video-item">
+                <iframe 
+                    width="560" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/{{ first_video.videoId }}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+                <a class="video-title" href="https://www.youtube.com/watch?v={{ first_video.videoId }}" target="_blank">
+                    {{ first_video.title }}
+                </a>
+            </div>
+            <div class="video-item">
+                <iframe 
+                    width="560" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/{{ second_video.videoId }}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+                <a class="video-title" href="https://www.youtube.com/watch?v={{ second_video.videoId }}" target="_blank">
+                    {{ second_video.title }}
+                </a>
+            </div>
+        </div>
+        <div class="button-container">
+            <button id="chooseFirst">Choose First</button>
+            <button id="chooseSecond">Choose Second</button>
+        </div>
+    {% else %}
+        <div class="form-container">
+            <h1>S - Ranking</h1>
+            <form id="sessionForm">
+                <div class="form-group">
+                    <label for="playlistId">Playlist ID:</label>
+                    <input type="text" id="playlistId" name="playlistId">
+                </div>
+                <div class="form-group">
+                    <label for="sessionName">Session Name:</label>
+                    <input type="text" id="sessionName" name="sessionName" autocomplete="off">
+                </div>
+                <button type="button" id="startSessionBtn">Start Session</button>
+            </form>
+        </div>
+    {% endif %}
+    <script src="/static/script.js"></script>
+</body>
+</html>
