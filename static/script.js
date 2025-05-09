@@ -23,7 +23,8 @@ function addMessage(content, isUser = false) {
 sendMessage.addEventListener('click', async () => {
     const message = chatInput.value.trim();
     if (message.length > 250) {
-        message = message.slice(0, 250);
+        alert("Message is too long");
+        return;
     }
     if (!message) return;
 
