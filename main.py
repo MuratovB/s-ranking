@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils import *
 from schemas import *
 from math import log2, floor
-import os
 
 app = FastAPI()
 
@@ -25,10 +24,11 @@ async def root():
 async def start_session(data: SessionRequest):
     try:
         session_name = data.session_name
-        videos = register_session(data.playlist_id)
+        videos = fetch_videos(data.playlist_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch videos: {e}")
     finally:
+        estimated_time = len(videos) * floor(log2(len(videos)))
         results = []
         final_result = []
         result_arr = []
@@ -37,7 +37,7 @@ async def start_session(data: SessionRequest):
         first_video = first_arr.pop()
         second_video = second_arr.pop()
         initial_message = "Say hi to the user. You are a model that discusses with user about songs and only songs. Anything that is not related to music mustn't be discussed. For now, user haven't send any messages to you, but every user's message will be in the next format: 'prompt: user message'."
-        model_response = send_message_to_model(initial_message)
+        model_response = await send_message_to_model(initial_message)
         chat_history = [
             {
                 "role": "user",
@@ -59,7 +59,7 @@ async def start_session(data: SessionRequest):
             "second_arr": second_arr,
             "chat_history": chat_history,
             "progress": 0,
-            "estimated_time": len(videos) * floor(log2(len(videos))),
+            "estimated_time": estimated_time,
             "finished": False,
         }
         return {
@@ -77,6 +77,7 @@ async def session_make_step(data: SessionStepRequest):
         raise HTTPException(status_code=404, detail="Session not found")
     
     session = sessions[session_name]
+    print(session)
 
     if session["finished"]:
         return {"message": "Session is finished!"}
@@ -122,7 +123,7 @@ async def session_make_step(data: SessionStepRequest):
                 }
             else:
                 session["first_arr"] = session["videos"].pop()
-                session["second_arr"] = session["results"].pop()
+                session["second_arr"] = session["videos"].pop()
                 session["first_video"] = session["first_arr"].pop()
                 session["second_video"] = session["second_arr"].pop()
     else:
@@ -138,13 +139,15 @@ async def session_make_step(data: SessionStepRequest):
 async def send_message(data: MessageRequest):
     session_name = data.session_name
     message = data.message
+    if session_name not in sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
     session = sessions[session_name]
     chat_history = session["chat_history"]
     chat_history.append({
         "role": "user",
         "content": message
     })
-    model_response = send_message_to_model(message)
+    model_response = await send_message_to_model(message)
     chat_history.append({
         "role": "assistant",
         "content": model_response
@@ -156,16 +159,16 @@ async def send_message(data: MessageRequest):
 
 @app.get("/get_chat_history")
 async def get_chat_history(session_name: str):
-    session = sessions[session_name]
-    if not session:
+    if session_name not in sessions:
         raise HTTPException(status_code=404, detail="Session not found")
-    return session["chat_history"]
+    session = sessions[session_name]
+    return {"chat_history": session["chat_history"]}
 
 @app.get("/get_session")
 async def get_session(session_name: str):
-    session = sessions[session_name]
-    if not session:
+    if session_name not in sessions:
         raise HTTPException(status_code=404, detail="Session not found")
+    session = sessions[session_name]
     return {
         "videos": session["videos"],
         "final_result": session["final_result"],

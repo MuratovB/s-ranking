@@ -45,7 +45,7 @@ def fetch_videos(playlist_id):
     if len(videos) <= 1:
         raise Exception("Not enough videos in the playlist.")
 
-    videos = [videos]
+    videos = [[video] for video in videos]
 
     shuffle(videos)
 
