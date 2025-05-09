@@ -1,6 +1,63 @@
 const startSessionBtn = document.getElementById('startSessionBtn');
 const chooseFirstBtn = document.getElementById('chooseFirst');
 const chooseSecondBtn = document.getElementById('chooseSecond');
+const toggleChat = document.getElementById('toggleChat');
+const chatContainer = document.getElementById('chatContainer');
+const chatInput = document.getElementById('chatInput');
+const sendMessage = document.getElementById('sendMessage');
+const chatMessages = document.getElementById('chatMessages');
+
+toggleChat.addEventListener('click', () => {
+    const isHidden = chatContainer.style.display === 'none';
+    chatContainer.style.display = isHidden ? 'flex' : 'none';
+});
+
+function addMessage(content, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'model-message'}`;
+    messageDiv.textContent = content;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+sendMessage.addEventListener('click', async () => {
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    const sessionName = localStorage.getItem('session_name');
+    if (!sessionName) {
+        alert('Please start a session first');
+        return;
+    }
+
+    addMessage(message, true);
+    chatInput.value = '';
+    
+    try {
+        const response = await fetch('/send_message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                session_name: sessionName,
+                message: message
+            })
+        });
+        
+        const data = await response.json();
+        addMessage(data.response);
+    } catch (error) {
+        console.error('Error:', error);
+        addMessage('Error: Could not send message');
+    }
+});
+
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage.click();
+    }
+});
 
 if (startSessionBtn) {
     startSessionBtn.addEventListener('click', function() {
@@ -66,15 +123,17 @@ function getVideos() {
 }
 
 function updateRankingUI(firstVideo, secondVideo, finalResult) {
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) {
+        console.error('Main content container not found');
+        return;
+    }
+
     if (finalResult && finalResult.length > 0) {
-        // Display final results using the same structure as your HTML template
-        let resultsHTML = `
+        mainContent.innerHTML = `
             <h1>Final Results</h1>
             <ul class="results-list">
-        `;
-        
-        finalResult.forEach((video, index) => {
-            resultsHTML += `
+            ${finalResult.map((video, index) => `
                 <li class="result-item">
                     <span class="result-number">${index + 1}</span>
                     <img class="result-thumbnail" src="${video.thumbnail_url}" alt="${video.title}">
@@ -82,14 +141,11 @@ function updateRankingUI(firstVideo, secondVideo, finalResult) {
                         ${video.title}
                     </a>
                 </li>
-            `;
-        });
-
-        resultsHTML += `</ul>`;
-        document.body.innerHTML = resultsHTML;
+            `).join('')}
+            </ul>
+        `;
     } else {
-        // Display the two videos for comparison
-        document.body.innerHTML = `
+        mainContent.innerHTML = `
             <div class="video-container">
                 <div class="video-item">
                     <iframe 
@@ -128,7 +184,6 @@ function updateRankingUI(firstVideo, secondVideo, finalResult) {
         chooseFirstBtn.disabled = false;
         chooseSecondBtn.disabled = false;
 
-        // Reattach event listeners to the new buttons
         chooseFirstBtn.addEventListener('click', () => {
             sendRankingChoice(1);
         });

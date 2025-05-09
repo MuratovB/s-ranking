@@ -7,79 +7,89 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    {% if final_result %}
-        <h1>Final Results</h1>
-        <ul class="results-list">
-            {% for video in final_result %}
-                <li class="result-item">
-                    <span class="result-number">{{ loop.index }}</span>
-                    <img class="result-thumbnail" src="{{ video.thumbnail_url }}" alt="{{ video.title }}">
-                    <a class="video-title" href="https://www.youtube.com/watch?v={{ video.videoId }}" target="_blank">
-                        {{ video.title }}
+    <div id="main-content">
+        {% if final_result %}
+            <h1>Final Results</h1>
+            <ul class="results-list">
+                {% for video in final_result %}
+                    <li class="result-item">
+                        <span class="result-number">{{ loop.index }}</span>
+                        <img class="result-thumbnail" src="{{ video.thumbnail_url }}" alt="{{ video.title }}">
+                        <a class="video-title" href="https://www.youtube.com/watch?v={{ video.videoId }}" target="_blank">
+                            {{ video.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif first_video and second_video %}
+            <div class="video-container">
+                <div class="video-item">
+                    <iframe 
+                        width="560" 
+                        height="315" 
+                        src="https://www.youtube.com/embed/{{ first_video.videoId }}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                    <a class="video-title" href="https://www.youtube.com/watch?v={{ first_video.videoId }}" target="_blank">
+                        {{ first_video.title }}
                     </a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% elif first_video and second_video %}
-        <div class="video-container">
-            <div class="video-item">
-                <iframe 
-                    width="560" 
-                    height="315" 
-                    src="https://www.youtube.com/embed/{{ first_video.videoId }}" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-                <a class="video-title" href="https://www.youtube.com/watch?v={{ first_video.videoId }}" target="_blank">
-                    {{ first_video.title }}
-                </a>
+                </div>
+                <div class="video-item">
+                    <iframe 
+                        width="560" 
+                        height="315" 
+                        src="https://www.youtube.com/embed/{{ second_video.videoId }}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                    <a class="video-title" href="https://www.youtube.com/watch?v={{ second_video.videoId }}" target="_blank">
+                        {{ second_video.title }}
+                    </a>
+                </div>
             </div>
-            <div class="video-item">
-                <iframe 
-                    width="560" 
-                    height="315" 
-                    src="https://www.youtube.com/embed/{{ second_video.videoId }}" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-                <a class="video-title" href="https://www.youtube.com/watch?v={{ second_video.videoId }}" target="_blank">
-                    {{ second_video.title }}
-                </a>
+            <div class="button-container">
+                <button id="chooseFirst">Choose First</button>
+                <button id="chooseSecond">Choose Second</button>
             </div>
+        {% else %}
+            <div class="form-container">
+                <h1>S - Ranking</h1>
+                    <div class="instructions">
+                        <h2>How to use:</h2>
+                        <ol>
+                            <li>Paste the full playlist link or the YouTube playlist ID</li>
+                            <li>Enter a session name (between 4 and 64 characters)</li>
+                            <li>Click "Start Session"</li>
+                            <li>Choose the better video/song from the two presented by clicking the corresponding buttons</li>
+                            <li>At the end, you will receive a sorted list of all the videos</li>
+                        </ol>
+                        <p class="tip">Tip: You can find the playlist ID in the URL after "list=" <br>Example: https://www.youtube.com/playlist?list=<strong>PLxxxxxxxxxxxxxxx</strong><br>But full playlist url is better though</p>
+                    </div>
+                <form id="sessionForm">
+                    <div class="form-group">
+                        <label for="playlistId">Playlist:</label>
+                        <input type="text" id="playlistId" name="playlistId">
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionName">Session Name:</label>
+                        <input type="text" id="sessionName" name="sessionName" autocomplete="off">
+                    </div>
+                    <button type="button" id="startSessionBtn">Start Session</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+    <button class="chat-button" id="toggleChat">Chat</button>
+    <div class="chat-container" id="chatContainer" style="display: none;">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type your message...">
+            <button class="chat-send" id="sendMessage">Send</button>
         </div>
-        <div class="button-container">
-            <button id="chooseFirst">Choose First</button>
-            <button id="chooseSecond">Choose Second</button>
-        </div>
-    {% else %}
-        <div class="form-container">
-            <h1>S - Ranking</h1>
-                <div class="instructions">
-                    <h2>How to use:</h2>
-                    <ol>
-                        <li>Paste the full playlist link or the YouTube playlist ID</li>
-                        <li>Enter a session name (between 4 and 64 characters)</li>
-                        <li>Click "Start Session"</li>
-                        <li>Choose the better video/song from the two presented by clicking the corresponding buttons</li>
-                        <li>At the end, you will receive a sorted list of all the videos</li>
-                    </ol>
-                    <p class="tip">Tip: You can find the playlist ID in the URL after "list=" <br>Example: https://www.youtube.com/playlist?list=<strong>PLxxxxxxxxxxxxxxx</strong><br>But full playlist url is better though</p>
-                </div>
-            <form id="sessionForm">
-                <div class="form-group">
-                    <label for="playlistId">Playlist:</label>
-                    <input type="text" id="playlistId" name="playlistId">
-                </div>
-                <div class="form-group">
-                    <label for="sessionName">Session Name:</label>
-                    <input type="text" id="sessionName" name="sessionName" autocomplete="off">
-                </div>
-                <button type="button" id="startSessionBtn">Start Session</button>
-            </form>
-        </div>
-    {% endif %}
+    </div>
     <script src="/static/script.js"></script>
 </body>
 </html>
