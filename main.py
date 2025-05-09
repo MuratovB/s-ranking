@@ -63,7 +63,7 @@ async def start_session(data: SessionRequest):
             "finished": False,
         }
         return {
-            "message": f"Session: {session_name} is ready!"
+            "message": f"Session: {session_name} is ready!",
             "first_video": first_video,
             "second_video": second_video
         }
