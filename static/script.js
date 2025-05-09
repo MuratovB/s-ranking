@@ -93,8 +93,8 @@ if (startSessionBtn) {
         })
         .then(data => {
             localStorage.setItem('session_name', data.session_name);
-            console.log(data);
             updateRankingUI(data.first_video, data.second_video, data.final_result);
+            document.getElementById('toggleChat').style.display = 'block';
         })
         .catch(error => {
             console.error('Error:', error);
@@ -220,7 +220,6 @@ function sendRankingChoice(winner) {
     })
     .then(() => {
         getVideos().then(dataObj => {
-            console.log(dataObj);
             updateRankingUI(dataObj.first_video, dataObj.second_video, dataObj.final_result);
         });
     })
