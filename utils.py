@@ -34,7 +34,18 @@ def fetch_videos(playlist_id):
         # Extract title, videoId, high res thumbnail
         video_id = video["snippet"]["resourceId"]["videoId"]
         title = video["snippet"]["title"]
-        thumbnail_url = video["snippet"]["thumbnails"]["high"]["url"]
+        thumbnails = video["snippet"]["thumbnails"]
+        thumbnail_url = ""
+        if "maxres" in thumbnails:
+            thumbnail_url = thumbnails["maxres"]["url"]
+        elif "standard" in thumbnails:
+            thumbnail_url = thumbnails["standard"]["url"]
+        elif "high" in thumbnails:
+            thumbnail_url = thumbnails["high"]["url"]
+        elif "medium" in thumbnails:
+            thumbnail_url = thumbnails["medium"]["url"]
+        elif "default" in thumbnails:
+            thumbnail_url = thumbnails["default"]["url"]
         videos[i] = {
             "videoId": video_id,
             "title": title,
