@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from utils import *
 from schemas import *
 from math import log2, floor
+from random import shuffle
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -62,6 +63,7 @@ async def start_session(request: Request, data: SessionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch videos: {e}")
     finally:
+        shuffle(videos)
         estimated_time = len(videos) * floor(log2(len(videos)))
         results = []
         final_result = []
@@ -132,10 +134,12 @@ async def session_make_step(data: RankingRequest):
             session["second_video"] = session["second_arr"].pop(0)
         elif len(session["videos"]) == 1:
             session["first_arr"] = session["videos"].pop(0)
+            shuffle(session["results"])
             session["second_arr"] = session["results"].pop(0)
             session["first_video"] = session["first_arr"].pop(0)
             session["second_video"] = session["second_arr"].pop(0)
         else:
+            shuffle(session["results"])
             session["videos"] = session["results"]
             session["results"] = []
             

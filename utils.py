@@ -1,5 +1,4 @@
 import os, requests
-from random import shuffle
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -46,8 +45,6 @@ def fetch_videos(playlist_id):
         raise Exception("Not enough videos in the playlist.")
 
     videos = [[video] for video in videos]
-
-    shuffle(videos)
 
     return videos
 
