@@ -36,7 +36,7 @@ async def start_session(data: SessionRequest):
         second_arr = videos.pop()
         first_video = first_arr.pop()
         second_video = second_arr.pop()
-        initial_message "Say hi to the user. You are a model that discusses with user about songs and only songs. Anything that is not related to music mustn't be discussed. For now, user haven't send any messages to you, but every user's message will be in the next format: 'prompt: user message'."
+        initial_message = "Say hi to the user. You are a model that discusses with user about songs and only songs. Anything that is not related to music mustn't be discussed. For now, user haven't send any messages to you, but every user's message will be in the next format: 'prompt: user message'."
         model_response = send_message_to_model(initial_message)
         chat_history = [
             {
